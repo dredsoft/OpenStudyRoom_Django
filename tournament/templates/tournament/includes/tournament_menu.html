@@ -1,0 +1,57 @@
+{% load bootstrap3 league_tags static forum_markup_tags%}
+<div class="row">
+<nav class="navbar navbar-default">
+<ul class="nav navbar-nav navbar-left">
+  <li {% if active == "about" %}class="active"{% endif %}>
+    <a href="{% url "tournament:about" tournament.pk%}">About</a>
+  </li>
+  {% if groups %}
+  <li {% if active == "groups" %}class="active"{% endif %}>
+    <a href="{% url "tournament:groups" tournament.pk%}">Groups</a>
+  </li>
+  {% endif %}
+  <li {% if active == "brackets" %}class="active"{% endif %}>
+    <a href="{% url "tournament:brackets" tournament.pk%}">Brackets</a>
+  </li>
+  <li {% if active == "games" %}class="active"{% endif %}>
+    <a href="{% url "tournament:games" tournament.pk%}">Games</a>
+  </li>
+  <li {% if active == "players" %}class="active"{% endif %}>
+    <a href="{% url "tournament:players" tournament.pk%}">Players</a>
+  </li>
+  {% if tournament.use_calendar %}
+  <li {% if active == "calendar" %}class="active"{% endif %}>
+    <a href="{% url "tournament:calendar" tournament.pk%}">Calendar</a>
+  </li>
+  {% endif %}
+  {% if tournament.rules %}
+  <li {% if active == "rules" %}class="active"{% endif %}>
+    <a href="{% url "tournament:rules" tournament.pk%}">Rules</a>
+  </li>
+  {% endif %}
+  {% if tournament.prizes %}
+  <li {% if active == "prizes" %}class="active"{% endif %}>
+    <a href="{% url "tournament:prizes" tournament.pk%}">Prizes</a>
+  </li>
+  {% endif %}
+</ul>
+{% if admin %}
+<ul class="nav navbar-nav navbar-right active" style="margin-right:5px;">
+  <li>
+    {% if active == "groups" %}
+    <a href="{% url "tournament:manage_groups" tournament.pk%}">
+    {% elif active == "brackets" %}
+    <a href="{% url "tournament:manage_brackets" tournament.pk%}">
+    {% elif active == "games" %}
+    <a href="{% url "tournament:manage_brackets" tournament.pk%}">
+    {% else %}
+    <a href="{% url "tournament:manage_settings" tournament.pk%}">
+    {% endif %}
+      <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+    </a>
+  </li>
+</ul>
+{% endif %}
+
+</nav>
+</div>

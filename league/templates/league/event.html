@@ -1,0 +1,60 @@
+{% extends "league/base.html" %}
+{% load static tz league_tags bootstrap3 calendar_tags community_tags%}
+
+{% block title %}{{event}}- Overview{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs">
+  <li ><a href="{% url 'league:archives' %}">Archives</a></li>
+  {%if event not in open_events%}
+  <li class="active">
+    {{event |event_link}}
+  </li>
+    {%endif%}
+  {% for ev in open_events %}
+  <li {%if ev == event %} class="active"{%endif %}>
+    {{ev|event_link}}
+  </li>
+  {% endfor %}
+  <li class="pull-right"><a href="{% url 'league:scrap_list' %}">Scrap list</a></li>
+</ul>
+{% include 'league/includes/league_nav.html' with active='overview' %}
+
+{% get_current_timezone as TIME_ZONE %}
+<h3>Infos</h3>
+<p>The <b>{{event.name}}</b> started on <b>{{event.begin_time |date:"M d, Y H:i" }}</b> ({{TIME_ZONE}}) and {% if close %} stoped{% else %}will stop{%endif%} on <b>{{event.end_time |date:"M d, Y H:i" }}</b> ({{TIME_ZONE}}).</p>
+<p>{{event.number_players}} players played {{event.number_games}} games in {{event.number_divisions}} divisions. That is {{event.percent_game_played}} % of {{event.possible_games}} possible games.</p>
+
+<h3>Game settings </h3>
+<ul>
+  <li> Game must be played either on the KGS or on the OGS go server.</li>
+  <li> Games must be played with <b>no handicap</b></li>
+  <li> Games must use <b>Japanese timesetting</b> with at least <b>{{event.get_main_time_min}} min main time</b> and
+    <b>5 x {{event.additional_time}} sec byo-yomi</b>.</li>
+  <li>At least one player must tag the game saying <b>{{event.tag}}</b> or <b>{{event.tag|lower}}</b>.</li>
+  <li>The game can be ranked or free to the convenience of the players.</li>
+  <li>Komi must be set to <b>6.5 </b>.</li>
+
+  <li>Using a bot such as Leela or Crazy Stone during league game is strictly forbidden. The OSR team might check some games from time to time to look for matching with these go engines.</li>
+</ul>
+<h3> League rules </h3>
+<ul>
+  <li> Players can play up to <b>{{event.nb_matchs}} games</b> against the same opponent {%if event.type == ladder %} within the group{%endif%}.</li>
+  <li>A win grants <b>{{event.ppwin}} points</b> and a loss grants <b>{{event.pploss}}</b>.</li>
+  <li>Players who played at least <b>{{event.min_matchs}} games</b> will be added to the next league, once this one has ended.</li>
+</ul>
+<p>Players are strongly encouraged to review their game afterward. If both players have the same rank, or if your opponent can't help you in reviewing the game, one should feel free to ask stronger players in our kgs room and/or in our discord channel help for the review.</p>
+</ul>
+{% endblock %}}
+{% if event.is_open %}
+{% block extra_js %}
+
+<script type="text/javascript" src="{% static 'jquery.countdown/jquery.countdown.min.js' %}"></script>
+<script type="text/javascript">
+var end = Date.now() + {{event.remaining_sec}};
+$("#countdown").countdown(end,function(event) {
+    $(this).html(event.strftime('League ends in %D day%!D %H:%M:%S'));
+  });
+</script>
+
+{% endblock %}
+{% endif %}

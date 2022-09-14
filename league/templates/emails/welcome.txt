@@ -1,0 +1,12 @@
+Hello and welcome to the Open Study Room, {{user.username}}!
+
+You have just been accepted as an OSR member, and we are glad to have you onboard.
+
+After logging in, you should take a look at your profile page, located at openstudyroom.org/profile/
+There you will be able to manage your e-mail address and passwords.
+
+You can now also use our forums and join our Discord server at https://discord.gg/b7meDjX .
+
+Looking forward to see you there!
+
+openstudyroom.org

@@ -1,0 +1,38 @@
+{% load league_tags %}
+{% get_meijin as meijin %}
+
+<div class='table-responsive'>
+    <table id='league-table' class='table table-bordered  table-hover ' >
+        <thead >
+        <tr>
+            <th>rank</th>
+            <th>player</th>
+            <th>score</th>
+            <th>wins</th>
+            <th>loss</th>
+            <th>games</th>
+            <th>Results</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for player in results %}
+        <tr {%if not player.is_active %}class="inactive"{%endif%}>
+          <td>{{forloop.counter}}</td>
+            <td >{{player.user | user_link:meijin}}</td>
+            <td >{{ player.score }}</td>
+            <td>{{ player.n_win }} </td>
+            <td>{{ player.n_loss }}</td>
+            <td>{{ player.n_games }}</td>
+            <td>
+            {% for opponent in results %}
+            {% if forloop.counter == forloop.parentloop.counter %}
+            {% else %}
+            {% html_one_result %}
+            {% endif %}
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

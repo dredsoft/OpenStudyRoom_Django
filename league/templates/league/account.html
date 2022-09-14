@@ -1,0 +1,326 @@
+{% extends "full_width.html" %}
+{% load wagtailcore_tags forum_markup_tags l10n i18n static%}
+{% load league_tags %}
+{% load bootstrap3 %}
+{% block extra_head_js %}
+<script type="text/javascript">
+function load_game(game_id) {
+    $.ajax({
+    type: "GET",
+    url: "/league/game/json/" + game_id,
+    dataType: "json",
+    success: processData,
+    error: function(){ alert("failed"); }
+});
+
+function processData(data)
+{
+    document.getElementById("game_infos").innerHTML= data.game_infos ;
+    var elem = document.getElementById("player");
+    var player = new WGo.BasicPlayer(elem, {
+      sgf: data.sgf
+      });
+      $("[data-toggle=tooltip]").tooltip();
+};
+return false;};
+</script>
+{% endblock %}
+
+{% block body_class %}user{% endblock %}
+
+{% block title %}{% if user == request.user %}My{% else %}{{user.username}}{% endif %} profile{% endblock %}
+{% block heading %}
+{% get_meijin as meijin %}
+
+<div class="page-header">
+    <h1>
+        {% if user == meijin %}
+            <i class="fa fa-trophy" data-toggle="tooltip" title="{{user.username}} is OSR Meijin !"></i>
+        {% endif %}
+        {% if user == request.user %}My{% else %}{{user.username}}{% endif %} profile
+    </h1>
+
+</div>
+{%endblock%}
+{% block content %}
+{% language 'en' %}
+{% get_meijin as meijin %}
+
+{% include 'league/includes/user_nav.html' with active='league' %}
+
+{% if user == meijin %}
+<div class="well">
+    <h4><i class="fa fa-trophy"></i> {{user.username}} is OSR Meijin!</h4>
+    He earned respect from all Open Study Room and a teaching game with Alexander Dinerchtein (3p).
+</div>
+{% endif %}
+<div class="panel panel-default">
+<div class="panel-heading clearfix">
+  <h4>
+    {% if user.profile.country %}
+    <img   src="{{user.profile.country.flag}}">
+    {% endif %}
+     {{user.username}} infos
+     {% if request.user == user %}
+      <a href="{% url 'league:profile_update' user.profile.pk %}"><button class="btn btn-default pull-right">{% bootstrap_icon 'wrench' %} Edit </button></a>
+     {% endif %}
+  </h4>
+</div>
+<div class="panel-body">
+
+    <div class="row">
+        {% include 'league/includes/user_infos.html' %}
+
+    </div>
+</div>
+</div>
+
+{% if won_divisions or won_tournaments %}
+<div class="panel panel-default">
+<div class="panel-heading">
+  <h4> Trophys</h4>
+</div>
+<div class="panel-body">
+  {% if won_divisions %}
+  <div class="col-md-6">
+    <h4>Leagues</h4>
+  {% for division in won_divisions %}
+  <p>  {{division.league_event.end_time|date}}: Winner of {{division|division_link}}</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% if won_tournaments %}
+
+<div class="col-md-6">
+  <h4>Tournaments</h4>
+{% for tournament in won_tournaments %}
+  <p>{{tournament.end_time|date}}: Winner of <a href="{% url "tournament:view" tournament.pk %}">{{tournament.name}}</a></p>
+{% endfor %}
+</div>
+{% endif %}
+
+</div>
+</div>
+{% endif %}
+
+{% if players %}
+<div class="panel panel-default">
+  <div class="panel-heading"><h4>{{user.username}} results of passed and open leagues</h4></div>
+<div class="panel-body">
+<div class="col-md-6">
+<ul class="nav nav-tabs">
+  <li class ="active"><a data-toggle="tab" href="#archives">Archives</a></li>
+  {% for event in open_events %}
+  {% if event.is_in %}
+  <li ><a data-toggle="tab" href="#{{event.pk}}">{{event.name}}</a></li>
+  {% endif %}
+  {%endfor%}
+</ul>
+<div class="tab-content">
+  <div id="archives" class="tab-pane fade in active">
+        <table id='archive-table' class='table' >
+          <thead>
+       <tr>
+         <th>Event</th>
+         <th>Division</th>
+         <th>win</th>
+         <th>loss</th>
+         <th>games </th>
+      </thead>
+      <tbody>
+  {% for player in players %}
+    <tr>
+      <td>{{player.event |event_link}}</td>
+      <td>{{player.division |division_link}}</td>
+      <td>{{player.nb_win}}</td>
+      <td>{{player.nb_loss}}</td>
+      <td>{{player.nb_games}}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  </table>
+  </div>
+  {% for event in open_events %}
+  {% if event.is_in %}
+{% with player=event.this_player %}
+  <div id="{{event.pk}}" class="tab-pane fade ">
+    <table id='{{event.pk}}-opponents-table' class=' table table-hover table-condensed'  >
+       <thead>
+         <tr>
+           <th>Rank</th>
+           <th>Player</th>
+           <th>score</th>
+           <th> {{user.profile.kgs_username}}'s results</th>
+        </thead>
+        <tbody>
+      {% with player.get_results as results %}
+      {% for opponent in event.results %}
+      {% if opponent == player %}
+      <tr class="info">
+        {%else%}
+        <tr>
+            {%endif%}
+        <td>{{forloop.counter}}</td>
+        <td>{{opponent.user | user_link:meijin}}</td>
+        <td>{{opponent.score}}
+        <td>
+          {% if opponent.user.pk in results %}
+          {% html_one_player_result%}
+          {% endif %}
+          </td>
+
+      </tr>
+{%endfor%}
+      {% endwith %}
+      {% endwith %}
+  </tbody>
+  </table>
+  </div>
+  {%endif%}
+    {%endfor%}
+</div>
+</div>
+<div class="col-md-6">
+  <div style="max-height:50%;">
+  <canvas id="gamesChart" height="100%" ></canvas>
+</div>
+<hr />
+<div style="max-height:50%;">
+{% if request.user.is_authenticated %}
+  {% include 'league/includes/vs.html' %}
+  {% endif %}
+</div>
+
+</div>
+</div>
+</div>
+
+{% endif %}
+
+
+<div class="panel panel-default">
+<div class="panel-heading clearfix"><h3>{{user}} Games
+
+  <a href= "\league\all_sgf\{{user.pk}}">
+    <button class="btn btn-default btn-sm pull-right">Download all games</button>
+  </a>
+
+</h3>
+</div>
+  {% if sgfs is None %}
+  <div class="panel-body">
+    {{user}} didn't play any league game yet.
+  {% else %}
+<div class ="row">
+<div class="col-md-4">
+  <div id ="game_infos">
+</div>
+
+{% include "league/includes/games.html" with sgfs=sgfs %}
+</div>
+
+<div class="col-md-8">
+
+    <div id="player">
+      <div class="alert alert-info">
+      Click a game result to see it.
+    </div>
+  </div>
+</div>
+</div>
+{%endif%}
+</div>
+</div>
+
+
+{%endlanguage%}
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.13/dataRender/datetime.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js'></script>
+<script src="{% static 'stats/stats.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  $('#game-table').DataTable({"bLengthChange": false ,"dom":'<"H"lr>ft<"F"ip>',
+  "columnDefs": [ {
+    targets: 0,
+    render: $.fn.dataTable.render.moment( 'MMM DD, YYYY','MMM DD, YYYY' )
+  } ],
+  "order": [[ 0, "desc" ]]});
+  $('#archive-table').DataTable({});
+
+{% for event in open_events %}
+$('#{{event.pk}}-opponents-table').DataTable({});
+{% endfor %}
+} );
+
+var games = {{games_stats|safe}}
+
+var labels = games.map(function(e) {
+  return moment(e.month).format('YYYY MM')
+});
+
+var wins_values = games.map(function(e) {
+  return e.wins
+});
+var losses_values = games.map(function(e) {
+  return e.losses
+});
+
+var config = {
+   type: 'line',
+   data: {
+      labels: labels,
+      datasets: [
+        {
+           label: "losses",
+           data: losses_values,
+           backgroundColor: 'rgb(255, 41, 28,0.3)',
+        },
+        {
+         label: "wins",
+         data: wins_values,
+         backgroundColor: 'rgb(40, 182, 44,0.3)',
+        fill:0
+      },
+
+    ]
+   },
+   options: {
+        scales: {
+            xAxes: [{
+                time: {
+                  displayFormats: {
+                          month: 'MMM YYYY'
+                        }
+                }
+            }],
+            yAxes: [{
+                stacked: true
+            }]
+        },
+        tooltips: {
+            mode: 'index',
+            callbacks: {
+              // Use the footer callback to display the sum of the items showing in the tooltip
+              footer: function(tooltipItems, data) {
+                var sum = 0;
+                tooltipItems.forEach(function(tooltipItem) {
+                  sum += data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                });
+                return 'Games: ' + sum;
+              },
+            },
+    }
+  }
+  }
+
+var games_chart = new Chart($('#gamesChart'), config);
+
+
+</script>
+{% endblock %}

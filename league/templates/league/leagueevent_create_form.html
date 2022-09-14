@@ -1,0 +1,39 @@
+{% extends 'league/admin/base.html' %}
+{% load bootstrap3 league_tags tz%}
+{% block title %}OSR league admin - Create new Event{% endblock %}
+{% block heading %}
+<div class="page-header">
+    <h1>
+      {% if copy_from%}
+        Copy {{copy_from}} league
+      {% else %}
+        Create new Event
+      {% endif %}
+    </h1>
+</div>
+{%endblock%}
+{% block content %}
+{% timezone "UTC" %}
+<div class="row">
+<div class="col-md-4">
+  <legend>      {% if copy_from%}
+          Copy {{copy_from}} league
+        {% else %}
+          Create new Event
+        {% endif %} </legend>
+<form action="" method="POST">{% csrf_token %}
+	{% bootstrap_form form %}
+	{% bootstrap_button "Save" button_type="submit" button_class="btn-primary" %}
+</form>
+</div>
+</div>
+{% endtimezone %}
+{% endblock %}
+
+{% block extra_css %}
+    {{ form.media.css }}
+{% endblock extra_css %}
+
+{% block extra_js %}
+{{ form.media.js }}
+{% endblock extra_js %}

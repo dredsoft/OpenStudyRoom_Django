@@ -1,0 +1,69 @@
+{% extends "full_width.html" %}
+
+{% load bootstrap3 static calendar_tags %}
+{% block title %} My profile - Timezone{% endblock %}
+{% block extra_css %}
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+{% endblock %}
+
+{% block heading %}
+<div class="page-header">
+    <h1>My profile - Timezone</h1>
+</div>
+{%endblock%}
+{% block content %}
+{% include 'league/includes/user_nav.html' with active='manage' %}
+    {% get_now as now %}
+
+<div class="row">
+  <div class="col-md-6">
+<div class="well">
+According to your setting your local time should be <span id='now'>{{now}}</span>.
+</div>
+
+    <p>
+          Setting a timezone for your profile will allow our website to adapt the time to your local timezone everywhere: forum, messages, events...
+    </p>
+    <p>
+    If no timezone is set, we show times in <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a>.
+    </p>
+  </div>
+  <div class= "col-md-6">
+      {% bootstrap_form form %}
+      <button id="send" class="btn btn-primary" >
+        {% bootstrap_icon "ok" %} Update timezone
+      </button>
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+{% include 'league/includes/ajax_setup.html' %}
+$(document).ready(function() {
+  $('#id_timezone').select2();
+
+  $('#send').click(function(){
+    var tz = $( "#id_timezone option:selected" ).text();
+    $.ajax({
+      type:"POST",
+      url: "{% url 'league:timezone_update'%}",
+      data:	{
+        'tz' : tz
+      },
+      success:function(now) {
+      $('#now').text(now)
+    }
+    });
+  });
+
+
+} );
+
+</script>
+{% endblock %}

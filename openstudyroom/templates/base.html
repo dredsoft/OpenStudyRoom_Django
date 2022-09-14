@@ -1,0 +1,156 @@
+{% load static wagtailuserbar compress puput_tags %}
+{% load menu_tags osr_tags tz calendar_tags%}
+{% load bootstrap3 %}
+{% load i18n %}
+
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- image for socials -->
+  <meta property="og:image" content="https://openstudyroom.org/media/images/2_nCHXP3t.original.png"/>
+  <link href="https://fonts.googleapis.com/css?family=Raleway:400,500" rel="stylesheet">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+  <!-- Google Analytics -->
+    <script>
+      window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+      ga('create', 'UA-106566532-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <script async src='https://www.google-analytics.com/analytics.js'></script>
+  <!-- End Google Analytics -->
+
+  <link rel="icon" type="image/png" href="/media/images/2_nCHXP3t.original.png" />
+  <title>
+    {% block title %}
+      {% if self.seo_title %}{{ self.seo_title }}{% else %}{{ self.title }}{% endif %}
+    {% endblock %}
+    {% block title_suffix %}
+      {% with self.get_site.site_name as site_name %}
+        {% if site_name %}- {{ site_name }}{%else%}- Open Study Room{% endif %}
+      {% endwith %}
+    {% endblock %}
+  </title>
+
+  <meta name="title" content="{% block meta_title %}{% if blog_page.seo_title %}{{ blog_page.seo_title }}{% else %}{{ blog_page.title }}{% endif %}{% endblock meta_title %}"/>
+  <meta name="description" content="{% block meta_description %}{{ blog_page.search_description }}{% endblock meta_description %}"/>
+
+  {# Global stylesheets #}
+  {% bootstrap_css %}
+
+  {% compress css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/openstudyroom.css' %}">
+	  <link type="text/css" href="{%static 'wgo/wgo.player.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/puput.css' %}"/>
+  {% endcompress %}
+
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,100italic,100,400italic,500,500italic,700,900,700italic,900italic' rel='stylesheet' type='text/css'>
+	<script src="https://use.fontawesome.com/1602589062.js"></script>
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="  crossorigin="anonymous"></script>
+
+
+  {% block extra_css %}
+    {# Override this in templates to add extra stylesheets #}
+  {% endblock %}
+
+  {% block extra_head_js %}
+    {# Override this in templates to add extra stylesheets #}
+  {% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+  <div id="wrap">
+  {% wagtailuserbar %}
+  {% block navbar %}
+  {% include 'menu.html' %}
+  {% endblock %}
+<header>
+
+  {% if request.user.is_authenticated and not request.user.is_league_member%}
+    <li class="alert alert-info alert-dismissable fade in" style="list-style-type: none;">
+      <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+      Your account will be activated soon. Be sure you verify your email and you entered a valid KGS or OGS username. Contact us if it takes too long. Thanks for waiting !
+    </li>
+  {% endif %}
+<div class="alerts">
+{% bootstrap_messages %}
+</div>
+{% block extra-header %}{% endblock %}
+</header>
+
+
+
+  <div class="container">
+    <div class="row">
+      {% block postman_menu %}
+      {%endblock%}
+
+      {% block heading %}
+        <div class="page-header">
+          <h1>{{ self.title }}</h1>
+        </div>
+      {% endblock %}
+    </div>
+
+  <div class="row-fluid">
+      {% block breadcrumb %} {% endblock %}
+  </div>
+</div>
+{% block page_intro %} {% endblock %}
+  {% block page_content%}
+  {% endblock %}
+
+  {% block main %}{% endblock %}
+</div>
+    <footer class="footer">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-4 hidden-xs">
+            <p style="margin-top:20px;">
+            openstudyroom@gmail.com
+          </p>
+          </div>
+          <div class="col-md-4 text-center ">
+            <h3>
+ Open Study Room
+            </h3>
+          </div>
+          <div class="col-md-4 hidden-xs">
+            {% include 'home/includes/socials_footer.html' %}
+
+        </div>
+      </div>
+    </div>
+
+      </footer>
+      {% get_current_timezone as TIME_ZONE %}
+      {% get_current_language as LANGUAGE_CODE %}
+
+
+  {# Global javascript #}
+    {% bootstrap_javascript %}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/openstudyroom.js' %}"></script>
+    <script type="text/javascript" src="{%static 'wgo/wgo.min.js'%}"></script>
+    <script type="text/javascript" src="{%static 'wgo/wgo.player.min.js'%}"></script>
+    <script type="text/javascript">$("[data-toggle=tooltip]").tooltip();</script>
+    <script>
+    moment.locale('{{LANGUAGE_CODE}}');
+    gmt($('.rich-text'),'{{TIME_ZONE}}','{% tz_offset %}')
+    </script>
+    {% block extra_js %}
+      {# Override this in templates to add extra javascript #}
+    {% endblock %}
+
+    {# for machina templates we needs a js block #}
+    {% block js %}
+    {% endblock %}
+</body>
+</html>

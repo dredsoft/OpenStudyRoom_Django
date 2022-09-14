@@ -1,0 +1,25 @@
+{% extends "left_sidebar.html" %}
+{% load i18n static %}{% load postman_tags bootstrap3%}
+{% block title %}{% trans "Messaging" %}
+
+{% endblock %}
+
+{% block heading %}
+<div class="page-header">
+    <h1>My profile - Messages</h1>
+</div>
+
+
+{% include 'league/includes/user_nav.html' with active='messages' %}
+
+{% endblock %}
+{% block sidebar %}
+<ul class="nav nav-pills nav-stacked">{% with postman_unread_count as unread_count %}
+ <li><a href="{% url 'postman:inbox' %}">{%bootstrap_icon "inbox"%} {% trans "Inbox" %}{% if unread_count %} <strong>({{ unread_count }})</strong>{% endif %}</a></li>
+ <li ><a href="{% url 'postman:sent' %}">{%bootstrap_icon "send"%} {% trans "Sent Messages" %}</a></li>
+ <li><a href="{% url 'postman:write' %}">{%bootstrap_icon "pencil"%} {% trans "Write" %}</a></li>
+ <li ><a href="{% url 'postman:archives' %}">{%bootstrap_icon "folder-close"%} {% trans "Archives" %}</a></li>
+ <li ><a href="{% url 'postman:trash' %}">{%bootstrap_icon "trash"%} {% trans "Trash" %}</a></li>
+ {%endwith%}
+</ul>
+{% endblock %}

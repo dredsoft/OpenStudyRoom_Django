@@ -1,0 +1,80 @@
+{% extends "league/base.html" %}
+{% load tz static league_tags bootstrap3%}
+{% block title %}{{event}}- Results{% endblock %}
+
+
+{% block content %}
+<ul class="nav nav-tabs">
+  <li ><a href="{% url 'league:archives' %}">Archives</a></li>
+  {%if event not in open_events%}
+  <li class="active">{{event |event_link}}</li>
+    {%endif%}
+  {% for ev in open_events %}
+  <li {%if ev == event %} class="active"{%endif %}>
+    <a href="{% url 'league:results' ev.pk %}">
+      {% if ev.community %}
+      ({{ev.community.slug}})
+      {% endif %}
+      {{ev}}
+    </a>
+  </li>
+  {% endfor %}
+  <li class="pull-right"><a href="{% url 'league:scrap_list' %}">Scrap list</a></li>
+
+</ul>
+{% include 'league/includes/league_nav.html' with active='results' %}
+{% if event.number_divisions > 1 %}
+<ul class="nav nav-pills">
+    {% for div in event.get_divisions %}
+    <li {% if div == division %}class='active'{%endif%} > {{div|division_link}}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if division %}
+
+{% if number_players > 20 %}
+{% include "league/includes/results_league.html"  %}
+{% else %} {%if number_players > 0 %}
+{% include "league/includes/results_ladder.html"  %}
+{% else %}
+<div class="well">
+  This league is empty !
+</div>
+{% endif %}
+{% endif %}
+
+{% else %}
+<div class="well">
+  This league is empty !
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% timezone "UTC" %}
+{% block extra_js %}
+{% if number_players > 20 %}
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.13/fh-3.1.2/r-2.1.0/sc-1.4.2/datatables.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+$('#league-table').DataTable({
+  "iDisplayLength": 50,
+  "columnDefs": [
+    { "width": "60%", "targets": 6 }
+  ]
+});
+
+} );
+</script>
+{%endif%}
+{% if event.is_open %}
+<script type="text/javascript" src="{% static 'jquery.countdown/jquery.countdown.min.js' %}"></script>
+<script type="text/javascript">
+var end = Date.now() + {{event.remaining_sec}};
+$("#countdown").countdown(end,function(event) {
+    $(this).html(event.strftime('League ends in %D day%!D %H:%M:%S'));
+  });
+</script>
+{% endif %}
+{% endblock %}
+{% endtimezone %}

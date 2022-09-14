@@ -1,0 +1,64 @@
+{% extends "board_base.html" %}
+{% load i18n bootstrap3%}
+
+{% block sub_title %}{% trans "Edit forum profile" %}{% endblock sub_title %}
+{% block breadcrumb %}{%endblock%}
+
+{% block heading %}
+<div class="page-header">
+    <h1>{{user.username}} profile</h1>
+</div>
+{%endblock%}
+
+{% block content %}
+
+{% include 'league/includes/user_nav.html' with active='profile' %}
+
+{% if profile.avatar %}
+<div class="profile-avatar">
+  <img src="{{ profile.avatar.url }}" class="img-responsive" alt="{{ profile.user.username }}" />
+</div>
+{% else %}
+<div class="profile-avatar empty">
+  <i class="fa fa-user fa-4x" ></i>
+</div>
+{% endif %}
+
+<form method="post" action="{% url 'league:league_profile' user.username %}" class="form" enctype="multipart/form-data" novalidate>{% csrf_token %}
+    <div class="row">
+        <div class="col-md-12">
+    <div id="div_id_{{ form.avatar.html_name }}" class="form-group{% if form.avatar.errors %} has-error{% endif %}">
+        <div class="controls">
+          {% if form.avatar.label %}<label class="control-label" for="{{ field.auto_id }}">{{ form.avatar.label }}{% if not form.avatar.field.required %} <span class="text-muted">{% trans "(optional)" %}</span>{% endif %}</label>{% endif %}
+          {{ form.avatar }}
+            {% if form.avatar.help_text %}<p class="help-block">{{ form.avatar.help_text }}</p>{% endif %}
+            {% for error in form.avatar.errors %}<p class="error">{{ error }}</p>{% endfor %}
+        </div>
+    </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            {% include "partials/form_field.html" with field=form.signature %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-actions">
+                <input type="submit" class="btn btn-large btn-primary" value="{% trans "Submit" %}" />
+            </div>
+        </div>
+    </div>
+</form>
+
+
+
+{% endblock content %}
+
+{% block extra_css %}
+    {{ form.media.css }}
+{% endblock extra_css %}
+
+{% block extra_js %}
+    {{ form.media.js }}
+{% endblock extra_js %}

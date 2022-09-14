@@ -1,0 +1,118 @@
+{% extends "league/base.html" %}
+{% load tz static league_tags wgo_tags bootstrap3 l10n i18n%}
+
+{% block title %}{% if sgf %} {{sgf.black.username}} vs {{sgf.white.username}} {% else %}{{event}}- Games{% endif %}{% endblock %}
+{% block extra_head_js %}
+<script type="text/javascript">
+function load_game(sgf_id) {
+    $.ajax({
+    type: "GET",
+    url: "/league/game/json/" + sgf_id,
+    dataType: "json",
+    success: processData,
+    error: function(){ alert("failed"); }
+});
+
+function processData(data)
+{
+    document.getElementById("game_infos").innerHTML= data.game_infos ;
+    var elem = document.getElementById("player");
+    var player = new WGo.BasicPlayer(elem, {
+      sgf: data.sgf
+      });
+    window.history.pushState('page2', 'Title', data.permalink);
+    document.getElementById("game_infos").innerHTML = data.game_infos ;
+    document.getElementById("game-header").innerHTML= ' - ' + data.white + ' vs ' + data.black;
+    document.title = data.white + ' vs ' + data.black + ' - Open Study Room';
+    $("[data-toggle=tooltip]").tooltip();
+
+};
+return false;};
+</script>
+{% endblock %}
+{% block content %}
+{% language 'en' %}
+
+<ul class="nav nav-tabs">
+  <li ><a href="{% url 'league:archives' %}">Archives</a></li>
+  {%if event not in open_events%}
+  <li class="active">{{event |event_link}}</li>
+    {%endif%}
+  {% for ev in open_events %}
+  <li {%if ev == event %} class="active"{%endif %}>
+    <a href="{% url 'league:games' ev.pk %}">
+      {% if ev.community %}
+      ({{ev.community.slug}})
+      {% endif %}
+      {{ev}}
+    </a>
+  </li>
+  {% endfor %}
+  <li class="pull-right"><a href="{% url 'league:scrap_list' %}">Scrap list</a></li>
+  </ul>
+{% include 'league/includes/league_nav.html' with active='games' %}
+<div class="well"> This table shows all games that have been played in the {{event.name}}</div>
+
+<div class ="row">
+<div  class="col-md-4">
+  <div id ="game_infos">
+    {% if sgf %}
+  {% include "league/includes/game_info.html"  %}
+    {% endif %}
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">Games from {{event}}</div>
+
+{% include "league/includes/games.html" with sgfs=sgfs %}
+
+</div>
+</div>
+
+<div class="col-md-8">
+  {% if sgf %}
+  <div id="player" data-wgo="{{ sgf.sgf_text | prepare_sgf}}" >
+    </div>
+    {% else %}
+    <div id="player">
+      <div class="alert alert-info">
+      Click a game result to see it.
+    </div>
+
+    </div>
+  {% endif %}
+
+  </div>
+</div>
+
+  {%endlanguage%}
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.16/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.13/dataRender/datetime.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+$('#game-table').DataTable({
+  "bLengthChange": false ,"dom":'<"H"lr>ft<"F"ip>',
+
+  "columnDefs": [ {
+    targets: 0,
+    render: $.fn.dataTable.render.moment( 'MMM DD, YYYY','MMM DD, YYYY' )
+  } ],
+  "order": [[ 0, "desc" ]]
+});
+} );
+</script>
+{% if event.is_open %}
+<script type="text/javascript" src="{% static 'jquery.countdown/jquery.countdown.min.js' %}"></script>
+<script type="text/javascript">
+var end = Date.now() + {{event.remaining_sec}};
+$("#countdown").countdown(end,function(event) {
+    $(this).html(event.strftime('League ends in %D day%!D %H:%M:%S'));
+  });
+</script>
+
+{% endif %}
+{% endblock %}
